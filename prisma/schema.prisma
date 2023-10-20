@@ -1,0 +1,156 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String @unique
+  password String
+
+  @@map("admin")
+}
+
+model Audience {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String    @unique
+  password String
+  phoneNo  String    @map("phone_no")
+  address  String
+  payments Payment[]
+  orders   Order[]
+
+  @@map("audience")
+}
+
+model Stadium {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  name      String     @unique
+  abbr      String     @unique
+  schedules Schedule[]
+
+  zones Zone[]
+
+  @@map("stadium")
+}
+
+model Zone {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  pricePerSeat Float  @map("price_per_seat")
+  size         Int
+
+  stadium   Stadium @relation(fields: [stadiumId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  stadiumId String  @map("stadium_id") @db.ObjectId
+
+  @@map("zone")
+}
+
+model Team {
+  id               String     @id @default(auto()) @map("_id") @db.ObjectId
+  name             String     @unique
+  abbr             String     @unique
+  teamOneSchedules Schedule[] @relation("team_one")
+  teamTwoSchedules Schedule[] @relation("team_two")
+
+  @@map("team")
+}
+
+model TimeSlot {
+  id    String   @id @default(auto()) @map("_id") @db.ObjectId
+  date  DateTime
+  start DateTime
+  end   DateTime
+
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  scheduleId String   @unique @db.ObjectId
+
+  @@unique([date, start, end, scheduleId])
+  @@map("time_slot")
+}
+
+model Schedule {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  status    ScheduleStatus @default(CONFIRMED)
+  timeSlot  TimeSlot?
+  createdAt DateTime       @default(now())
+
+  stadium   Stadium @relation(fields: [stadiumId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  stadiumId String  @map("stadium_id") @db.ObjectId
+  teamOne   Team    @relation("team_one", fields: [teamOneId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  teamOneId String  @map("team_one_id") @db.ObjectId
+  teamTwo   Team    @relation("team_two", fields: [teamTwoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  teamTwoId String  @map("team_two_id") @db.ObjectId
+
+  orders Order[]
+
+  @@map("schedule")
+}
+
+enum ScheduleStatus {
+  CANCELLED
+  CONFIRMED
+}
+
+model Ticket {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  seatNo  String @map("seat_no")
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId String @map("order_id") @db.ObjectId
+
+  @@map("ticket")
+}
+
+model Order {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime    @default(now()) @map("created_at")
+  noOfTickets Int         @map("no_of_tickets")
+  status      OrderStatus
+  payment     Payment?
+  tickets     Ticket[]
+
+  audience   Audience @relation(fields: [audienceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  audienceId String   @map("audience_id") @db.ObjectId
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  scheduleId String   @map("schedule_id") @db.ObjectId
+
+  @@map("order")
+}
+
+model Payment {
+  id         String        @id @default(auto()) @map("_id") @db.ObjectId
+  order      Order         @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId    String        @unique @map("order_id") @db.ObjectId
+  audience   Audience      @relation(fields: [audienceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  audienceId String        @map("audience_id") @db.ObjectId
+  amount     Float
+  method     PaymentMethod
+  status     PaymentStatus
+  createdAt  DateTime      @default(now())
+
+  @@map("payment")
+}
+
+enum PaymentStatus {
+  PAID
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+}
+
+enum OrderStatus {
+  SUCCESS
+  CANCELLED_BY_USER
+  CANCELLED_BY_ADMIN
+  MATCH_CANCELLED
+  MATCH_POSTPONED
+}
