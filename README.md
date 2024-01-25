@@ -32,3 +32,7 @@ http://localhost:3000/
       screen
 - [ ] In ticket modal, user should be able to add tikets for multiple zones...
 - [x] Add separate ticket id for each seat selected
+
+## INFO
+![image](https://github.com/kishorreyansh/ADBMS-IPL-TM-2023/assets/140970519/db4fbe83-c520-494d-af45-ed1fa42c92d6)
+
