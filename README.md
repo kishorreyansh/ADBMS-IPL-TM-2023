@@ -21,6 +21,9 @@
 ## Mongo DB Details
 Schema: ipl-final-2023
 
+## Application URL
+http://localhost:3000/
+
 ## TODO
 
 - [x] Add phone number and address to customer
