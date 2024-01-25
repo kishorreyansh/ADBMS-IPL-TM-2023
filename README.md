@@ -3,6 +3,7 @@
 ## Commands
 
 - npm install
+- npm run setup
 - npm run dev
 
 ## Credentials
@@ -16,6 +17,9 @@
 
 - Email: `customer@app.com`
 - Password: `password`
+
+## Mongo DB Details
+Schema: ipl-final-2023
 
 ## TODO
 
